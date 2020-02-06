@@ -1,0 +1,44 @@
+参考 https://github.com/r-lib/gh/issues/107
+
+```r
+gh::gh(
+  "POST /repos/:owner/:repo/pages", 
+  owner = "JiaxiangBU", 
+  repo = "test-gh", 
+  source = list(branch = jsonlite::unbox("master"), path = jsonlite::unbox("")), 
+  .send_headers = c(Accept = "application/vnd.github.switcheroo-preview+json")
+)
+```
+
+```r
+Error in gh_process_response(raw) : GitHub API error (422): 422 Unprocessable Entity Message: Invalid request. / is not a member of ["", "/docs"]. Read more at https://developer.github.com/v3/repos/pages/#enable-a-pages-site
+```
+
+因此只有`["", "/docs"]`两种情况。
+
+```json
+{
+  "url": "https://api.github.com/repos/JiaxiangBU/test-gh/pages",
+  "status": {},
+  "cname": {},
+  "custom_404": false,
+  "html_url": "https://jiaxiangbu.github.io/test-gh/",
+  "source": {
+    "branch": "master",
+    "path": "/"
+  }
+} 
+```
+
+The README.md is valid, https://jiaxiangbu.github.io/test-gh/README.md.
+
+```r
+> dir.create("docs")
+> file.edit("docs/index.html")
+> git2r::add(path = "docs/")
+> git2r::commit(message = "add index.html")
+[0fa6c7b] 2020-02-06: add index.html
+> git2r::push(name = 'origin', refspec = "refs/heads/master", cred = git2r::cred_token())
+```
+
+生成 docs
